@@ -235,9 +235,9 @@ int main()
 		myOtherQuad.UpdateTransform();
 		myOtherQuad.Update();
 		myOtherQuad.Draw();
-		myOtherQuad.translation = glm::vec3(550, 550, 0);
-		myOtherQuad.UpdateTransform();
-		myOtherQuad.Draw();
+		//myOtherQuad.translation = glm::vec3(550, 550, 0);
+		//myOtherQuad.UpdateTransform();
+		//myOtherQuad.Draw();
 
 		/*sprite.Update();
 		sprite.Draw();*/

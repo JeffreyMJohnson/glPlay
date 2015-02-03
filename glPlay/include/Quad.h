@@ -8,7 +8,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "SOIL/SOIL.h"
+//#include "SOIL/SOIL.h"
 
 #include <string>
 #include <iostream>
@@ -24,17 +24,17 @@ extern const int SCREEN_HEIGHT;
 struct Quad
 {
 	GLFWwindow* window;
-	GLuint vao;
-	GLuint vbo;
-	GLuint uvo;//buffer for UV coordinates
+	GLuint vao;//vertex array object
+	GLuint vbo;//vertex buffer object
+	//GLuint uvo;//buffer for UV coordinates
 	float* vertices;
-	float* UVData;
+	//float* UVData;
 	const char* vertexShaderPath = ".\\source\\VertexShader.glsl";
-	const char* fragmentShaderPath = ".\\source\\TexturedFragmentShader.glsl";
-	//const char* fragmentShaderPath = ".\\source\\FlatFragmentShader.glsl";
+	//const char* fragmentShaderPath = ".\\source\\TexturedFragmentShader.glsl";
+	const char* fragmentShaderPath = ".\\source\\FlatFragmentShader.glsl";
 	const char* texturePath = ".\\resources\\textures\\testTexture.png";
-	GLuint textureID;
-	GLuint tex_location;
+	//GLuint textureID;
+	//GLuint tex_location;
 	GLuint shaderProgram;
 	glm::mat4 transform;
 	glm::vec3 translation, scale;
@@ -58,7 +58,7 @@ struct Quad
 		width = a_width;
 		height = a_height;
 
-		LoadTexture();
+		//LoadTexture();
 
 		shaderProgram = CreateProgram(vertexShaderPath, fragmentShaderPath);
 		glGenVertexArrays(1, &vao);
@@ -66,7 +66,7 @@ struct Quad
 
 		glGenBuffers(1, &vbo);
 
-		glGenBuffers(1, &uvo);
+		//glGenBuffers(1, &uvo);
 
 		float hHeight = height * .5;
 		float hWidth = width * .5;
@@ -81,15 +81,15 @@ struct Quad
 		vertices[6] = -hWidth;//bottom-left
 		vertices[7] = -hHeight;
 
-		UVData = new float[8];
-		UVData[0] = 0;//top-left
-		UVData[1] = 1;
-		UVData[2] = 1;//top-right
-		UVData[3] = 1;
-		UVData[4] = 1;//bottom-right
-		UVData[5] = 0;
-		UVData[6] = 0;//bottom-left
-		UVData[7] = 0;
+		//UVData = new float[8];
+		//UVData[0] = 0.0f;//top-left
+		//UVData[1] = 100.0f;
+		//UVData[2] = 100.0f;//top-right
+		//UVData[3] = 100.0f;
+		//UVData[4] = 100.0f;//bottom-right
+		//UVData[5] = 0.0f;
+		//UVData[6] = 0.0f;//bottom-left
+		//UVData[7] = 0.0f;
 		
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -105,10 +105,11 @@ struct Quad
 		glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(positionAttrib);
 
-		glBindBuffer(GL_ARRAY_BUFFER, uvo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(UVData), UVData, GL_STATIC_DRAW);
-		GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoord");
-		glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)* 2, 0);
+
+		//glBindBuffer(GL_ARRAY_BUFFER, uvo);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 8, UVData, GL_STATIC_DRAW);
+		//GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoord");
+		//glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)* 2, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
@@ -170,6 +171,7 @@ struct Quad
 	{
 		glBindVertexArray(vao);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		//glBindTexture(GL_TEXTURE_2D, textureID);
 		glDrawArrays(GL_QUADS, 0, 4);
 		glUniformMatrix4fv(uniMVP, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
 
@@ -321,28 +323,28 @@ struct Quad
 		return program;
 	}
 
-	void LoadTexture()
-	{
-		textureID = 0;
+	//void LoadTexture()
+	//{
+	//	textureID = 0;
 
-		glGenTextures(1, &textureID);
-		glActiveTexture(GL_TEXTURE0);
+	//	//glGenTextures(1, &textureID);
+	//	glActiveTexture(GL_TEXTURE0);
 
-		//int imageWidth, imageHeight;
-		//unsigned char* image = SOIL_load_image(texturePath, &imageWidth, &imageHeight, 0, SOIL_LOAD_RGBA);
-		//glBindTexture(GL_TEXTURE_2D, textureID);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-		//SOIL_free_image_data(image);
+	//	//int imageWidth, imageHeight;
+	//	//unsigned char* image = SOIL_load_image(texturePath, &imageWidth, &imageHeight, 0, SOIL_LOAD_RGBA);
+	//	//glBindTexture(GL_TEXTURE_2D, textureID);
+	//	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+	//	//SOIL_free_image_data(image);
 
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-		textureID = SOIL_load_OGL_texture(texturePath, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-
-		tex_location = glGetUniformLocation(shaderProgram, "TextureSample");
-	}
+	//	textureID = SOIL_load_OGL_texture(texturePath, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
+	//	glBindTexture(GL_TEXTURE_2D, textureID);
+	//	tex_location = glGetUniformLocation(shaderProgram, "TextureSample");
+	//}
 
 
 };
