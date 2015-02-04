@@ -92,22 +92,6 @@ struct Quad
 		glVertexAttribPointer(texCoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)(sizeof(float) * 2));	
 
 
-
-		//float UVData[] =
-		//{
-		//	0, 1,
-		//	1, 1,
-		//	1, 0,
-		//	0, 0
-		//};
-		//glGenBuffers(1, &uvo);
-		//glBindVertexArray(vao);
-
-		//glBindBuffer(GL_ARRAY_BUFFER, uvo);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(UVData), UVData, GL_STATIC_DRAW);
-		//GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoord");
-		//glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
-
 		uniMVP = glGetUniformLocation(shaderProgram, "MVP");
 
 		glGenTextures(1, &textureID);
