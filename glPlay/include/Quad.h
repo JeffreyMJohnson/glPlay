@@ -26,15 +26,14 @@ struct Quad
 	GLFWwindow* window;
 	GLuint vao;//vertex array object
 	GLuint vbo;//vertex buffer object
-	//GLuint uvo;//buffer for UV coordinates
-	float* vertices;
-	//float* UVData;
+	GLuint uvo;//buffer for UV coordinates
+
 	const char* vertexShaderPath = ".\\source\\VertexShader.glsl";
-	//const char* fragmentShaderPath = ".\\source\\TexturedFragmentShader.glsl";
-	const char* fragmentShaderPath = ".\\source\\FlatFragmentShader.glsl";
+	const char* fragmentShaderPath = ".\\source\\TexturedFragmentShader.glsl";
+	//const char* fragmentShaderPath = ".\\source\\FlatFragmentShader.glsl";
 	const char* texturePath = ".\\resources\\textures\\testTexture.png";
-	//GLuint textureID;
-	//GLuint tex_location;
+	GLuint textureID;
+	GLuint uniTextureSample;
 	GLuint shaderProgram;
 	glm::mat4 transform;
 	glm::vec3 translation, scale;
@@ -43,12 +42,14 @@ struct Quad
 	float width, height;
 
 	GLint uniMVP;
-	GLuint uniTranslate;
 
 	glm::mat4 viewMatrix;
 	glm::mat4 cameraMatrix;
 	glm::mat4 projectionMatrix;
 	glm::mat4 modelViewProjectionMatrix;
+
+
+
 
 
 	Quad(GLFWwindow* a_windowHandle, float a_width, float a_height)
@@ -61,66 +62,79 @@ struct Quad
 		//LoadTexture();
 
 		shaderProgram = CreateProgram(vertexShaderPath, fragmentShaderPath);
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		glGenBuffers(1, &vbo);
-
-		//glGenBuffers(1, &uvo);
-
-		float hHeight = height * .5;
-		float hWidth = width * .5;
-
-		vertices = new float[8];
-		vertices[0] = -hWidth;//top-left
-		vertices[1] = hHeight;
-		vertices[2] = hWidth;//top-right
-		vertices[3] = hHeight;
-		vertices[4] = hWidth;//bottom-right
-		vertices[5] = -hHeight;
-		vertices[6] = -hWidth;//bottom-left
-		vertices[7] = -hHeight;
-
-		//UVData = new float[8];
-		//UVData[0] = 0.0f;//top-left
-		//UVData[1] = 100.0f;
-		//UVData[2] = 100.0f;//top-right
-		//UVData[3] = 100.0f;
-		//UVData[4] = 100.0f;//bottom-right
-		//UVData[5] = 0.0f;
-		//UVData[6] = 0.0f;//bottom-left
-		//UVData[7] = 0.0f;
-		
-
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 8, vertices, GL_STATIC_DRAW);
-
-		glBindFragDataLocation(shaderProgram, 0, "outColor");
-
 		glLinkProgram(shaderProgram);
 		glUseProgram(shaderProgram);
 
+		float vertices[] =
+		{
+			-.5, .5, 0, 0,
+			.5, .5, 1, 0,
+			.5, -.5, 1, 1,
+			-.5, -.5, 0, 1
+
+		};
+
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		//glBindFragDataLocation(shaderProgram, 0, "outColor");
+
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
 		GLint positionAttrib = glGetAttribLocation(shaderProgram, "position");
 		glEnableVertexAttribArray(positionAttrib);
-		glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(positionAttrib);
+		glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
 
+		GLint texCoordAttrib = glGetAttribLocation(shaderProgram, "texCoord");
+		glEnableVertexAttribArray(texCoordAttrib);
+		glVertexAttribPointer(texCoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)*4, (void*)(sizeof(float) * 2));	
+
+
+
+		//float UVData[] =
+		//{
+		//	0, 1,
+		//	1, 1,
+		//	1, 0,
+		//	0, 0
+		//};
+		//glGenBuffers(1, &uvo);
+		//glBindVertexArray(vao);
 
 		//glBindBuffer(GL_ARRAY_BUFFER, uvo);
-		//glBufferData(GL_ARRAY_BUFFER, sizeof(GL_FLOAT) * 8, UVData, GL_STATIC_DRAW);
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(UVData), UVData, GL_STATIC_DRAW);
 		//GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoord");
-		//glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)* 2, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
+		//glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, 0);
 
 		uniMVP = glGetUniformLocation(shaderProgram, "MVP");
+
+		glGenTextures(1, &textureID);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		int imageWidth, imageHeight;
+		unsigned char* image = SOIL_load_image(".\\resources\\textures\\testTexture.png", &imageWidth, &imageHeight, 0, SOIL_LOAD_RGBA);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+		SOIL_free_image_data(image);
+		uniTextureSample = glGetUniformLocation(shaderProgram, "TextureSample");
+		glUniform1i(uniTextureSample, 0);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindVertexArray(0);
+
+
 
 		transform = glm::mat4(1);
 		position = glm::vec2(SCREEN_WIDTH * .5f, SCREEN_HEIGHT * .5f);
 		translation = glm::vec3(position, 0);
 
 
-		scale = glm::vec3(1);
+		scale = glm::vec3(100, 100, 0);
 		rotX = rotY = rotZ = 0;
 		//rotZ = DegreeToRadians(45.0f);
 		//rotZ = 45.0f;
@@ -144,7 +158,11 @@ struct Quad
 
 	~Quad()
 	{
-		delete[] vertices;
+
+		glDeleteBuffers(1, &vbo);
+		glDeleteBuffers(1, &uvo);
+		glDeleteVertexArrays(1, &vao);
+		glDeleteProgram(shaderProgram);
 	}
 
 	void Update()
@@ -169,11 +187,13 @@ struct Quad
 
 	void Draw()
 	{
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		//glBindVertexArray(vao);
 		//glBindTexture(GL_TEXTURE_2D, textureID);
+		//glUniform1i(uniTextureSample, 0);
 		glDrawArrays(GL_QUADS, 0, 4);
+
 		glUniformMatrix4fv(uniMVP, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
+
 
 	}
 
@@ -181,8 +201,8 @@ struct Quad
 	{
 
 		glm::mat4 translationMatrix(1.0f);
-		translationMatrix = glm::translate(translationMatrix, translation);
-		glm::mat4 scaleMatrix(1.0f);
+		translationMatrix = glm::translate(glm::mat4(), translation);
+		glm::mat4 scaleMatrix(100.0f);
 		scaleMatrix = glm::scale(scaleMatrix, scale);
 		glm::mat4 rotationMatrix(1.0f);
 		rotationMatrix = glm::rotate(rotationMatrix, rotX, glm::vec3(1, 0, 0));
@@ -201,9 +221,6 @@ struct Quad
 
 		modelViewProjectionMatrix = projectionMatrix * viewMatrix * transform;
 		//modelViewProjectionMatrix = transform * viewMatrix * projectionMatrix;
-		glm::vec4 pos1 = modelViewProjectionMatrix * glm::vec4(vertices[0], vertices[1], 0, 1);
-		glm::vec4 pos2 = modelViewProjectionMatrix * glm::vec4(vertices[2], vertices[3], 0, 1);
-		glm::vec4 pos3 = modelViewProjectionMatrix * glm::vec4(vertices[4], vertices[5], 0, 1);
 
 		glUniformMatrix4fv(uniMVP, 1, GL_FALSE, glm::value_ptr(modelViewProjectionMatrix));
 	}
